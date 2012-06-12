@@ -17,9 +17,6 @@ Ext.require([
 
 Ext.onReady(function () {
 
-	//Ext.QuickTips.init();
-
-
     Ext.tip.QuickTipManager.init();
 	var loginWindow = Ext.getCmp('loginWindow');
 
