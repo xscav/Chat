@@ -1,43 +1,24 @@
+"use strict";
+var util = require('./util');
+var tmpl = require('./templates');
+
 exports.init = function init(app, socks, db){
-    staticInit(app);
-	var User = dbInit(db);
-	socketInit(socks, User);
+    var dir = __dirname + '/public/login';
+
+    util.staticInit(app, dir, '/login', tmpl.filesMap('login'));
+
+    var mongourl = 'mongodb://user:password@ds033897.mongolab.com:33897/userbase';
+	var userBase = util.dbInit(db, mongourl, 'user', tmpl.dbTempl('user'));
+
+	socketInit(app, socks, userBase);
 };
 
-function dbInit(db) {
-
-	var User = db.model('user', new db.Schema({
-        name: { type: String, lowercase: false },
-		login: { type: String, lowercase: true },
-		password: String,
-		email: { type: String, lowercase: true }
-	}));
-	return User;
-}
-
-function staticInit(app) {
-
-	app.get('/', function(req, res) {
-		res.redirect('/login');
-	});
-
-	app.get('/login', function(req, res) {
-		res.sendfile(__dirname + '/public/login.html');
-	});
-
-	app.get('/login.js', function(req, res) {
-		res.sendfile(__dirname + '/public/login.js');
-	});
-
-	app.get('/_login.js', function(req, res) {
-		res.sendfile(__dirname + '/public/_login.js');
-	});
-}
-
-function socketInit(socks, User) {
+function socketInit(app, socks, db) {
 	socks.of('/login').on('connection', socksEventsHandler);
 
+//User Register
 	function socksEventsHandler(socket) {
+        var User = db.model('user');
 
 		function saveUser(data) {
 
@@ -54,38 +35,35 @@ function socketInit(socks, User) {
 					return;
 				}
 
-				socket.emit('user_register_successfull');
+				socket.emit('user_register_successfull', util.getSid());
 			});
 
 		}
-
-		//User Register
 
 		socket.on('user_register', function(data) {
 			var finded = 0, called = 0;
 
 			function findComplete(err, count) {
-				console.log('[login]: [find]: end(' + called + '/2)!');
 				called++;
 				if (!err && count)
 						finded = 1;
 
 					if (called >= 2) {
 						if (finded)
-								socket.emit('user_register_already_exist');
+							socket.emit('user_register_already_exist');
 						else
 							saveUser(data);
 						}
 			}
 
-			var valid = checkFields(data);
+			var valid = tmpl.checkPattern('user', data);
 			console.log('[chat]: [user]: valid:' + valid);
 
 			if (valid) {
 				if (!data.email) called++; //E-mail is not required field
-				else User.count({email : data.email}, findComplete);
+				else User.count({email : data.email.toLowerCase()}, findComplete);
 
-						User.count({login : data.login}, findComplete);
+				User.count({login : data.login.toLowerCase()}, findComplete);
 			} else {
 				socket.emit('user_fields_error');
 				return;
@@ -99,7 +77,6 @@ function socketInit(socks, User) {
 		socket.on('user_login', function(data) {
 
 			function findComplete(err, user) {
-				console.log('[login]: [find]: end!');
 
 				if (err || !user) {
 					socket.emit('user_login_doesnt_exits');
@@ -107,40 +84,20 @@ function socketInit(socks, User) {
 				}
 
 				if (user.password == data.password) {
-					socket.emit('user_login_successfull');
+                    socket.emit('user_login_successfull', util.getSid());
 					return;
 				}
 
 				socket.emit('user_login_error');
 			}
 
-			if (checkFields(data)) {
-				User.findOne({login : data.login}, findComplete);
+			if (tmpl.checkPattern('user', data)) {
+				User.findOne({login : data.login.toLowerCase()}, findComplete);
 			} else {
 				socket.emit('user_fields_error');
 			}
 
 		}); //on:user_login
 	}
-}
-
-function checkFields(data) {
-
-	if (!data)
-		return 0;
-
-	if (!data.login || !data.password)
-		return 0;
-
-	if (data.login.length < 4 || data.login.length > 20)
-		return 0;
-
-	if (data.password.length < 6 || data.password.length > 30)
-		return 0;
-
-	if (data.register && data.password != data.password2)
-		return 0;
-
-	return 1;
 }
 
