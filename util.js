@@ -29,11 +29,11 @@ exports.getSid = function getSid() {
 
 function randomString(length) {
     var chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXTZabcdefghiklmnopqrstuvwxyz";
-    var randomString = '';
+    var rstr = '';
 
     for (var i = 0; i < length; ++i) {
         var rnum = Math.floor(Math.random() * chars.length);
-        randomString += chars.substring(rnum, rnum + 1);
+        rstr += chars[rnum];
     }
-    return randomString;
+    return rstr;
 }

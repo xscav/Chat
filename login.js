@@ -15,11 +15,11 @@ exports.init = function init(app, socks, db){
 
 function socketInit(app, socks, db) {
 	socks.of('/login').on('connection', socksEventsHandler);
+    var User = db.model('user');
+
+	function socksEventsHandler(socket) {
 
 //User Register
-	function socksEventsHandler(socket) {
-        var User = db.model('user');
-
 		function saveUser(data) {
 
 			var user = new User({
@@ -29,13 +29,14 @@ function socketInit(app, socks, db) {
 				email: data.email
 			});
 
-			user.save(function(err) {
+			user.save(function (err) {
 				if (err) {
 					socket.emit('user_server_error');
 					return;
 				}
 
-				socket.emit('user_register_successfull', util.getSid());
+				socket.emit('user_register_successfull');
+                socket.emit('disconnect');
 			});
 
 		}
@@ -45,28 +46,27 @@ function socketInit(app, socks, db) {
 
 			function findComplete(err, count) {
 				called++;
-				if (!err && count)
-						finded = 1;
 
-					if (called >= 2) {
-						if (finded)
-							socket.emit('user_register_already_exist');
-						else
-							saveUser(data);
-						}
+				if (!err && count) {
+					finded = 1;
+				}
+
+                if (called >= 2) {
+					if (finded) {
+						socket.emit('user_register_already_exist');
+					} else {
+						saveUser(data);
+					}
+				}
 			}
 
-			var valid = tmpl.checkPattern('user', data);
-			console.log('[chat]: [user]: valid:' + valid);
-
-			if (valid) {
+			if (tmpl.checkPattern('user', data)) {
 				if (!data.email) called++; //E-mail is not required field
-				else User.count({email : data.email.toLowerCase()}, findComplete);
+				else User.count({ email : data.email.toLowerCase() }, findComplete);
 
-				User.count({login : data.login.toLowerCase()}, findComplete);
+				User.count({ login : data.login.toLowerCase() }, findComplete);
 			} else {
 				socket.emit('user_fields_error');
-				return;
 			}
 
 		}); //on:user_register
@@ -77,22 +77,24 @@ function socketInit(app, socks, db) {
 		socket.on('user_login', function(data) {
 
 			function findComplete(err, user) {
-
+                console.log('[MONGO]: finding complete.');
 				if (err || !user) {
 					socket.emit('user_login_doesnt_exits');
 					return;
 				}
 
-				if (user.password == data.password) {
-                    socket.emit('user_login_successfull', util.getSid());
+				if (user.password !== data.password) {
+                    socket.emit('user_login_error');
 					return;
 				}
 
-				socket.emit('user_login_error');
+                socket.emit('user_login_successfull');
+                socket.emit('disconnect');
 			}
 
+            //Trying to find user in a base
 			if (tmpl.checkPattern('user', data)) {
-				User.findOne({login : data.login.toLowerCase()}, findComplete);
+				User.findOne({ login : data.login.toLowerCase() }, findComplete);
 			} else {
 				socket.emit('user_fields_error');
 			}

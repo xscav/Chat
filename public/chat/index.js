@@ -10,6 +10,10 @@ var Ext;
 
 var socket = io.connect('http://' + globip + '/chat');
 
+function socksInit(sock) {
+
+
+}
 
 Ext.require([
     'Ext.window.Window',
@@ -20,5 +24,5 @@ Ext.require([
 ]);
 
 Ext.onReady(function () {
-
+    socksInit(socket);
 });

@@ -8,8 +8,21 @@ var port = process.env.C9_PORT;
 
 var mongo = require('mongoose');
 
-var app = require('express').createServer();
+var express = require('express');
+var app = express.createServer();
+var sessionStore = new express.session.MemoryStore();
+
+app.use(express.cookieParser());
+app.use(
+    express.session({
+        store: sessionStore,
+        secret: 'secret',
+        key: 'sessionID'
+    })
+);
+
 app.listen(port, locip);
+
 app.get('/', function(req, res) {
 	res.redirect('/login');
 });

@@ -34,14 +34,12 @@ function direct(sid) {
     else
         sid = '?sid=' + sid;
 
-    Ext.defer(function () {
-        Ext.Ajax.request({
-            url: '.',
-            success : function() {
-                window.location = '/chat' + sid;
-            }
-        });
-    }, 500);
+    Ext.Ajax.request({
+        url: '.',
+        success : function() {
+            window.location = '/chat' + sid;
+        }
+    });
 }
 
 function regButtonSwitcher(box) {
@@ -110,9 +108,10 @@ function initSocketEvents(socket) {
 	socket.on('user_login_successfull', function (sid) {
 		Ext.MessageBox.alert('Login Successfull:',
 			'Login successfull!' +
-		'');
+		'', function () {
+            direct(sid);
+		});
 		clear();
-        direct(sid);
 	});
 
 	socket.on('user_login_doesnt_exits', function () {
@@ -141,9 +140,10 @@ function initSocketEvents(socket) {
 	socket.on('user_register_successfull', function (sid) {
 		Ext.MessageBox.alert('Registration Successfull:',
 			'User registered!\n' +
-		'');
+		'', function () {
+            direct(sid);
+		});
 		clear();
-        direct(sid);
 	});
 
 	socket.on('user_fields_error', function () {
