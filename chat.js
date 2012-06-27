@@ -28,7 +28,7 @@ function socketInit(app, socks, db) {
             console.log('[COOKIES]: ' + cookies);
 
         } else {
-            accept('No cookie transmitted.', false);
+            accept('No cookie transmited.', false);
         }
     }
 	function socksEventsHandler(socket) {

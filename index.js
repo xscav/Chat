@@ -3,8 +3,8 @@
 //var locip = '192.168.1.40';
 //var port = 80;
 
-var locip = '0.0.0.0';
-var port = process.env.C9_PORT;
+var locip = process.env.IP;
+var port = process.env.PORT;
 
 var mongo = require('mongoose');
 
