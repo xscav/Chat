@@ -25,7 +25,7 @@ function socketInit(app, socks, db) {
         if (handshake.headers.cookie) {
 
             var cookies = parseCookie('sid=sjdfhnskejf');
-            console.log('[COOKIES]: ' + cookies);
+            console.log('[COOKIES]: ' + cookies)
 
         } else {
             accept('No cookie transmited.', false);
