@@ -14,11 +14,13 @@ exports.init = function init(app, socks, db){
 };
 
 function socketInit(app, socks, db) {
-	socks.of('/login').on('connection', socksEventsHandler);
+	socks.of('/login').on('sconnection', socksEventsHandler);
     var User = db.model('user');
 
-	function socksEventsHandler(socket) {
+	function socksEventsHandler(socket, session) {
 
+        if (session.authorized)
+            socket.emit('user_authorized');  //If client is authorized, redirect to chat
 //User Register
 		function saveUser(data) {
 
@@ -34,7 +36,8 @@ function socketInit(app, socks, db) {
 					socket.emit('user_server_error');
 					return;
 				}
-
+                
+                session.authorized = true;
 				socket.emit('user_register_successfull');
                 socket.emit('disconnect');
 			});
@@ -87,7 +90,8 @@ function socketInit(app, socks, db) {
                     socket.emit('user_login_error');
 					return;
 				}
-
+                
+                session.authorized = true;
                 socket.emit('user_login_successfull');
                 socket.emit('disconnect');
 			}

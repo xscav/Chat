@@ -29,15 +29,10 @@ function clear() {
 }
 
 function direct(sid) {
-    if (!sid)
-        sid = '';
-    else
-        sid = '?sid=' + sid;
-
     Ext.Ajax.request({
         url: '.',
         success : function() {
-            window.location = '/chat' + sid;
+            window.location = '/chat'
         }
     });
 }
@@ -105,11 +100,15 @@ function refreshAcceptButton() {
 
 function initSocketEvents(socket) {
 
-	socket.on('user_login_successfull', function (sid) {
+    socket.on('user_authorized', function () {
+        direct();
+    });
+
+	socket.on('user_login_successfull', function () {
 		Ext.MessageBox.alert('Login Successfull:',
 			'Login successfull!' +
 		'', function () {
-            direct(sid);
+            direct();
 		});
 		clear();
 	});

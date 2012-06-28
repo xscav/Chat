@@ -10,7 +10,8 @@ var initSocketEvents;
 var createLoginWindow;
 //
 
-var socket = io.connect('http://' + globip + '/login');
+//var socket = io.connect('http://' + globip + '/login');
+var socket = io.connectWithSession();
 
 initSocketEvents(socket);
 
